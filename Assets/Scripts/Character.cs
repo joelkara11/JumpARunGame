@@ -10,6 +10,7 @@ public class Character : MonoBehaviour
     [SerializeField] private float gravity;
     [SerializeField] private float jumpSpeed;
     [SerializeField] private float jumpCooldown;
+    [SerializeField] private AudioSource jumpAudio;
 
     private bool isJumping = false;
     private float jumpCooldownTimer;
@@ -20,10 +21,15 @@ public class Character : MonoBehaviour
     private Vector3 jumpVelocity;
     private Vector3 characterGravity;
     private Vector3 platformVelocity;
+    private Animator animator;
+    private AudioSource footstepAudio;
 
     void Start()
     {
         controller = GetComponent<CharacterController>();
+        animator = GetComponent<Animator>();
+        footstepAudio = GetComponent<AudioSource>();
+
         moveAction = InputSystem.actions.FindAction("Move");
         jumpAction = InputSystem.actions.FindAction("Jump");
         jumpCooldownTimer = 0.0f;
@@ -44,6 +50,9 @@ public class Character : MonoBehaviour
             this.jumpVelocity.y = this.jumpSpeed;
             this.jumpCooldownTimer = this.jumpCooldown;
             this.isJumping = true;
+
+            jumpAudio.time = 0.55f; // Start the jump audio a bit into the clip for better timing
+            jumpAudio.Play();
         }
 
         if (this.jumpVelocity.y > 0.0f)
@@ -58,13 +67,39 @@ public class Character : MonoBehaviour
         this.jumpCooldownTimer -= Time.fixedDeltaTime;
     }
 
+    void SetAnimationState(Vector2 inputMovement)
+    {
+        bool isRunning = inputMovement != Vector2.zero;
+
+        animator.SetBool("IsJumping", isJumping);
+        animator.SetBool("IsRunning", inputMovement != Vector2.zero);
+
+        if (isRunning && controller.isGrounded && !isJumping)
+        {
+            if (!footstepAudio.isPlaying)
+            {
+                footstepAudio.Play();
+            }
+        
+        }
+        else
+        {
+            if (footstepAudio.isPlaying)
+            {
+                footstepAudio.Stop();
+            }       
+        }
+    }
+
     void FixedUpdate()
     {
         GetPlatformVelocity();
 
         this.HandleJumping();
+        
 
         var inputMovement = this.moveAction.ReadValue<Vector2>();
+        this.SetAnimationState(inputMovement);
         var inputRightDirection = this.cameraTransform.right;
         var inputForwardDirection = this.cameraTransform.forward;
 
