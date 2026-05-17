@@ -53,7 +53,7 @@ public class KeyChest : MonoBehaviour
 
             if (currentPlayerKeys != null)
             {
-                currentPlayerKeys.keyCount++;
+                currentPlayerKeys.AddKey();
 
                 if (GameMessageUI.Instance != null)
                 {

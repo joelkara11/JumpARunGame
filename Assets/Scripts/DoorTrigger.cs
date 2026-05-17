@@ -7,8 +7,12 @@ public class DoorTrigger : MonoBehaviour
     public float openAngle = -90f;
     public float openSpeed = 2f;
 
+    [Header("Start Game")]
+    public bool startsGame = false;
+
     private bool playerInRange = false;
     private bool isOpen = false;
+    private bool gameStartedAlready = false;
 
     private Quaternion closedRotation;
     private Quaternion openRotation;
@@ -24,6 +28,12 @@ public class DoorTrigger : MonoBehaviour
         if (playerInRange && Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
         {
             isOpen = !isOpen;
+
+            if (isOpen && startsGame && !gameStartedAlready && HealthManager.Instance != null)
+            {
+                gameStartedAlready = true;
+                HealthManager.Instance.StartGame();
+            }
         }
 
         Quaternion targetRotation = isOpen ? openRotation : closedRotation;
